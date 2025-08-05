@@ -1,9 +1,9 @@
-import Products from "./products/products";
+import Shop from "./shop/shop";
 
 export default function Home() {
   return (
     <div>
-      <Products />
+      <Shop />
     </div>
   );
 }
