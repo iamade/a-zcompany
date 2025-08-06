@@ -1,17 +1,13 @@
-import { nanoid } from "nanoid";
-import { Cart, CartItem, DeliveryMethod, Product } from "../types";
-import { persist } from "zustand/middleware";
-import { cartApi } from "../lib/api";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { nanoid } from "nanoid";
+import { cartApi } from "@/src/lib/api";
+import type { Cart, CartItem, Product, DeliveryMethod } from "@/src/types";
 
 interface CartState {
   cart: Cart | null;
   selectedDelivery: DeliveryMethod | null;
   loading: boolean;
-
-  // Computed values
-  itemCount: number;
-  cartTotal: number;
 
   // Actions
   getCart: () => Promise<void>;
@@ -36,26 +32,13 @@ export const useCartStore = create<CartState>()(
       selectedDelivery: null,
       loading: false,
 
-      get itemCount() {
-        const cart = get().cart;
-        return cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
-      },
-
-      get cartTotal() {
-        const cart = get().cart;
-        if (!cart) return 0;
-        return cart.items.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-      },
-
       getCart: async () => {
         const state = get();
-        const cartId = state.cart?.id;
+        let cartId = state.cart?.id || localStorage.getItem("cart_id");
 
         if (!cartId) {
           const newCart = createNewCart();
+          localStorage.setItem("cart_id", newCart.id);
           set({ cart: newCart });
           return;
         }
@@ -68,6 +51,7 @@ export const useCartStore = create<CartState>()(
           console.error("Error fetching cart:", error);
           // If cart doesn't exist, create a new one
           const newCart = createNewCart();
+          localStorage.setItem("cart_id", newCart.id);
           set({ cart: newCart, loading: false });
         }
       },
@@ -159,6 +143,7 @@ export const useCartStore = create<CartState>()(
 
         try {
           await cartApi.deleteCart(cart.id);
+          localStorage.removeItem("cart_id");
           set({ cart: null });
         } catch (error) {
           console.error("Error deleting cart:", error);
@@ -177,3 +162,19 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+// Selectors for computed values
+export const useCartItemCount = () =>
+  useCartStore(
+    (state) =>
+      state.cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0
+  );
+
+export const useCartTotal = () =>
+  useCartStore((state) => {
+    if (!state.cart) return 0;
+    return state.cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+  });

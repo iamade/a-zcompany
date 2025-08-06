@@ -6,18 +6,20 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ShoppingCart, ChevronDown, User, History, LogOut } from "lucide-react";
 import { useAuthStore } from "@/src/stores/useAuthStore";
-import { useCartStore } from "@/src/stores/useCartStore";
+import { useCartStore, useCartItemCount } from "@/src/stores/useCartStore";
 
 export function Header() {
   const pathname = usePathname();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { currentUser, isAdmin, logout } = useAuthStore();
-  const itemCount = useCartStore((state) => state.itemCount);
+  const { getCart } = useCartStore();
+  const itemCount = useCartItemCount();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    getCart(); // Load cart when component mounts
+  }, [getCart]);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -36,10 +38,10 @@ export function Header() {
       <div className="flex align-middle items-center justify-between max-w-screen-2xl mx-auto">
         <Link href="/">
           <Image
-            src="/images/a-zlogo.png"
+            src="/images/logo.png"
             alt="app logo"
-            width={200}
-            height={200}
+            width={64}
+            height={64}
             className="max-h-16"
             unoptimized
           />
@@ -63,12 +65,12 @@ export function Header() {
             Shop
           </Link>
           <Link
-            href="/contact"
+            href="/test-error"
             className={`hover:text-blue-500 transition-colors ${
               isActive("/test-error") ? "active" : ""
             }`}
           >
-            Contact
+            Errors
           </Link>
           {isAdmin && (
             <Link
@@ -85,10 +87,12 @@ export function Header() {
         <div className="flex gap-3 align-middle">
           <Link
             href="/cart"
-            className={`custom-badge mt-2 mr-2 hover:text-blue-500 transition-colors ${
+            className={`${
+              itemCount > 0 ? "custom-badge" : ""
+            } mt-2 mr-2 hover:text-blue-500 transition-colors ${
               isActive("/cart") ? "active" : ""
             }`}
-            data-badge={mounted && itemCount > 0 ? itemCount : ""}
+            data-badge={mounted && itemCount > 0 ? itemCount.toString() : ""}
           >
             <ShoppingCart size={24} />
           </Link>
