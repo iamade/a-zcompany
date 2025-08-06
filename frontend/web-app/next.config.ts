@@ -1,17 +1,32 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  logging:{
-    fetches:{
-      fullUrl: true
-    }
-  } 
-  //  options: {
-  //           "ssl":true,
-  //           "sslCert": "ssl/localhost.pem",
-  //           "sslKey": "ssl/localhost-key.pem"
-  //         },
-
+  images: {
+    domains: ["localhost"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "5000",
+      },
+    ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:5000/api/:path*",
+      },
+      {
+        source: "/images/:path*",
+        destination: "http://localhost:5000/images/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
