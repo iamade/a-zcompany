@@ -38,10 +38,10 @@ export function Header() {
       <div className="flex align-middle items-center justify-between max-w-screen-2xl mx-auto">
         <Link href="/">
           <Image
-            src="/images/logo.png"
+            src="/images/a-zlogo.png"
             alt="app logo"
-            width={64}
-            height={64}
+            width={200}
+            height={200}
             className="max-h-16"
             unoptimized
           />
