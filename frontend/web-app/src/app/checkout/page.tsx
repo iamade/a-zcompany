@@ -2,34 +2,63 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCartStore } from "@/src/stores/useCartStore";
 import { useAuthStore } from "@/src/stores/useAuthStore";
 import { CheckoutStepper } from "@/src/components/checkout/CheckoutStepper";
-import { CheckoutDelivery } from "@/src//components/checkout/CheckoutDelivery";
+import { CheckoutDelivery } from "@/src/components/checkout/CheckoutDelivery";
 import { CheckoutReview } from "@/src/components/checkout/CheckoutReview";
 import { EmptyState } from "@/src/components/shared/EmptyStates";
-
+import { useCartStore } from "@/src/stores/useCartStore";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, loading, getCart } = useCartStore();
-  const { currentUser } = useAuthStore();
+  const { cart, loading, getCart, createOrder } = useCartStore();
+  const { currentUser, loading: authLoading } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    console.log("Checkout: useEffect triggered", { currentUser, authLoading });
+
+    
+    if (authLoading) {
+      console.log("Checkout: Auth still loading, waiting...");
+      return;
+    }
+
     if (!currentUser) {
+      console.log("Checkout: No user found, redirecting to login");
       router.push("/account/login?returnUrl=/checkout");
       return;
     }
-    getCart();
-  }, [currentUser, router, getCart]);
 
-  if (loading) {
+    console.log("Checkout: User found, loading cart");
+    getCart();
+  }, [currentUser, authLoading, router, getCart]);
+
+  const handleSubmitOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      await createOrder();
+      router.push("/checkout/success");
+    } catch (error) {
+      console.error("Order creation failed:", error);
+     
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
       </div>
     );
+  }
+
+  
+  if (!currentUser) {
+    return null;
   }
 
   if (!cart || cart.items.length === 0) {
@@ -44,10 +73,10 @@ export default function CheckoutPage() {
     );
   }
 
+  
   const steps = [
     { number: 1, title: "Delivery", completed: currentStep > 1 },
-    { number: 2, title: "Review", completed: currentStep > 2 },
-    { number: 3, title: "Payment", completed: false },
+    { number: 2, title: "Complete", completed: false },
   ];
 
   return (
@@ -63,10 +92,12 @@ export default function CheckoutPage() {
         {currentStep === 2 && (
           <CheckoutReview
             onBack={() => setCurrentStep(1)}
-            onNext={() => setCurrentStep(3)}
+            onSubmitOrder={handleSubmitOrder}
+            isSubmitting={isSubmitting}
           />
         )}
       </div>
     </div>
   );
 }
+

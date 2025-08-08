@@ -10,7 +10,7 @@ interface ShopState {
   loading: boolean;
   shopParams: ShopParams;
 
-  //Actions
+ 
   getProducts: () => Promise<void>;
   getProduct: (id: number) => Promise<void>;
   getBrands: () => Promise<void>;

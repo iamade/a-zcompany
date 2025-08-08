@@ -4,8 +4,8 @@ using Core.Entities;
 using Core.Interfaces;
 using StackExchange.Redis;
 
-namespace Infrastructure.Services
-{
+namespace Infrastructure.Services;
+
     public class CartService(IConnectionMultiplexer redis)  : ICartService
     {
         private readonly IDatabase _database = redis.GetDatabase();
@@ -31,4 +31,3 @@ namespace Infrastructure.Services
             return await GetCartAsync(cart.Id);
         }
     }
-}

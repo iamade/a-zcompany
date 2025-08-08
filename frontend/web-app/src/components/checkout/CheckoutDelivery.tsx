@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuthStore } from "@/src/stores/useAuthStore";
-import type { Address, DeliveryMethod } from "@/src/types";
+import type { DeliveryMethod, ShippingAddress } from "@/src/types";
+import { useCartStore } from "@/src/stores/useCartStore";
 
 const addressSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -25,6 +26,7 @@ interface CheckoutDeliveryProps {
 
 export function CheckoutDelivery({ onNext }: CheckoutDeliveryProps) {
   const { currentUser } = useAuthStore();
+  const { setShippingAddress, setSelectedDelivery } = useCartStore();
   const [deliveryMethods] = useState<DeliveryMethod[]>([
     {
       id: 1,
@@ -48,8 +50,7 @@ export function CheckoutDelivery({ onNext }: CheckoutDeliveryProps) {
       price: 19.99,
     },
   ]);
-  const [selectedDeliveryMethod, setSelectedDeliveryMethod] =
-    useState<number>(1);
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<number>(1);
 
   const {
     register,
@@ -73,14 +74,46 @@ export function CheckoutDelivery({ onNext }: CheckoutDeliveryProps) {
     }
   }, [currentUser, setValue]);
 
+  
+  useEffect(() => {
+    const defaultDeliveryMethod = deliveryMethods.find(method => method.id === selectedDeliveryMethod);
+    if (defaultDeliveryMethod) {
+      setSelectedDelivery(defaultDeliveryMethod);
+    }
+  }, [selectedDeliveryMethod, deliveryMethods, setSelectedDelivery]);
+
   const onSubmit = (data: AddressFormData) => {
-    // Store the address and delivery method in localStorage or state management
+
+    const shippingAddress: ShippingAddress = {
+      name: data.name,
+      line1: data.line1,
+      line2: data.line2 || null,
+      city: data.city,
+      state: data.state,
+      postalCode: data.postalCode,
+      country: data.country,
+    };
+
+    
+    const selectedDelivery = deliveryMethods.find(method => method.id === selectedDeliveryMethod);
+
+    
+    setShippingAddress(shippingAddress);
+    if (selectedDelivery) {
+      setSelectedDelivery(selectedDelivery);
+    }
     localStorage.setItem("checkoutAddress", JSON.stringify(data));
-    localStorage.setItem(
-      "checkoutDeliveryMethod",
-      selectedDeliveryMethod.toString()
-    );
+    localStorage.setItem("checkoutDeliveryMethod", selectedDeliveryMethod.toString());
+    
     onNext();
+  };
+
+  const handleDeliveryMethodChange = (methodId: number) => {
+    setSelectedDeliveryMethod(methodId);
+    const selectedMethod = deliveryMethods.find(method => method.id === methodId);
+    if (selectedMethod) {
+      setSelectedDelivery(selectedMethod);
+    }
   };
 
   return (
@@ -251,9 +284,7 @@ export function CheckoutDelivery({ onNext }: CheckoutDeliveryProps) {
                 name="deliveryMethod"
                 value={method.id}
                 checked={selectedDeliveryMethod === method.id}
-                onChange={(e) =>
-                  setSelectedDeliveryMethod(parseInt(e.target.value))
-                }
+                onChange={(e) => handleDeliveryMethodChange(parseInt(e.target.value))}
                 className="sr-only"
               />
               <div className="flex justify-between items-center">
@@ -277,3 +308,4 @@ export function CheckoutDelivery({ onNext }: CheckoutDeliveryProps) {
     </div>
   );
 }
+

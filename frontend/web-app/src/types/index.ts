@@ -41,23 +41,14 @@ export interface Cart {
   deliveryMethodId?: number;
   paymentIntentId?: string;
   clientSecret?: string;
-  coupon?: Coupon;
 }
 
-export interface Coupon {
-  name: string;
-  amountOff?: number;
-  percentOff?: number;
-  promotionCode: string;
-  couponId: string;
-}
 
 export interface User {
   firstName: string;
   lastName: string;
   email: string;
   address: Address;
-  roles: string | string[];
 }
 
 export interface Address {

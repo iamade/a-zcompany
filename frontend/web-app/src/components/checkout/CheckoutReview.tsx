@@ -5,12 +5,19 @@ import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { useCartStore, useCartTotal } from "@/src/stores/useCartStore";
 
+
 interface CheckoutReviewProps {
   onBack: () => void;
-  onNext: () => void;
+  onSubmitOrder: () => Promise<void>;
+  isSubmitting: boolean;
 }
 
-export function CheckoutReview({ onBack, onNext }: CheckoutReviewProps) {
+
+export function CheckoutReview({
+  onBack,
+  onSubmitOrder,
+  isSubmitting,
+}: CheckoutReviewProps) {
   const { cart } = useCartStore();
   const cartTotal = useCartTotal();
   const [address, setAddress] = useState<any>(null);
@@ -18,7 +25,7 @@ export function CheckoutReview({ onBack, onNext }: CheckoutReviewProps) {
   const [shippingPrice, setShippingPrice] = useState(0);
 
   useEffect(() => {
-    // Get stored address and delivery method
+    
     const storedAddress = localStorage.getItem("checkoutAddress");
     const storedDeliveryMethodId = localStorage.getItem(
       "checkoutDeliveryMethod"
@@ -142,7 +149,22 @@ export function CheckoutReview({ onBack, onNext }: CheckoutReviewProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="flex gap-4 mt-8">
+          <button
+            onClick={onBack}
+            className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+          >
+            ← Back to Delivery
+          </button>
+          <button
+            onClick={onSubmitOrder}
+            disabled={isSubmitting}
+            className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Submitting Order..." : "Submit Order"}
+          </button>
+        </div>
+        {/* <div className="space-y-3">
           <button
             onClick={onNext}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg transition-colors font-medium"
@@ -157,7 +179,7 @@ export function CheckoutReview({ onBack, onNext }: CheckoutReviewProps) {
             <ArrowLeft size={16} />
             Back to Delivery
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

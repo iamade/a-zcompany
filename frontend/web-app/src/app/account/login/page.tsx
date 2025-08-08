@@ -36,12 +36,16 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError("");
-
+    
     try {
       await login(data.email, data.password);
-      router.push(returnUrl);
+      console.log("Login successful, redirecting to:", returnUrl);
+      setTimeout(() => {
+        router.push(returnUrl);
+      }, 100);
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
+      console.log("Login failed:", err);
     } finally {
       setIsLoading(false);
     }

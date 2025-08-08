@@ -2,14 +2,15 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import { cartApi } from "@/src/lib/api";
-import type { Cart, CartItem, Product, DeliveryMethod } from "@/src/types";
+import type { Cart, CartItem, Product, DeliveryMethod, ShippingAddress } from "@/src/types";
 
 interface CartState {
   cart: Cart | null;
   selectedDelivery: DeliveryMethod | null;
+  shippingAddress: ShippingAddress | null;
   loading: boolean;
 
-  // Actions
+  
   getCart: () => Promise<void>;
   setCart: (cart: Cart) => Promise<void>;
   addItemToCart: (item: Product, quantity?: number) => Promise<void>;
@@ -17,7 +18,10 @@ interface CartState {
   updateItemQuantity: (productId: number, quantity: number) => Promise<void>;
   deleteCart: () => Promise<void>;
   setSelectedDelivery: (delivery: DeliveryMethod | null) => void;
+  setShippingAddress: (address: ShippingAddress | null) => void; // ADD THIS
   createCart: () => Cart;
+  createOrder: () => Promise<any>;
+  clearCart: () => void; 
 }
 
 const createNewCart = (): Cart => ({
@@ -30,6 +34,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       cart: null,
       selectedDelivery: null,
+      shippingAddress: null,
       loading: false,
 
       getCart: async () => {
@@ -49,7 +54,7 @@ export const useCartStore = create<CartState>()(
           set({ cart, loading: false });
         } catch (error) {
           console.error("Error fetching cart:", error);
-          // If cart doesn't exist, create a new one
+         
           const newCart = createNewCart();
           localStorage.setItem("cart_id", newCart.id);
           set({ cart: newCart, loading: false });
@@ -155,15 +160,76 @@ export const useCartStore = create<CartState>()(
       },
 
       createCart: createNewCart,
+
+      setShippingAddress: (address: ShippingAddress | null) => {
+        set({ shippingAddress: address });
+      },
+
+      createOrder: async () => {
+        try {
+          const state = get();
+          if (!state.cart?.id) {
+            throw new Error("No cart found");
+          }
+          if (!state.selectedDelivery?.id) {
+            throw new Error("No delivery method selected");
+          }
+          if (!state.shippingAddress) {
+            throw new Error("No shipping address provided");
+          }
+          const orderData = {
+            cartId: state.cart?.id,
+            deliveryMethodId: state.selectedDelivery?.id,
+            shippingAddress: state.shippingAddress,
+            paymentSummary: {
+              brand: "Cash", 
+              last4: "0000",
+              expMonth: 12,
+              expYear: 2030
+            }
+          };
+
+          const response = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+           
+            },
+            body: JSON.stringify(orderData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Failed to create order: ${errorData.message || response.statusText}`);
+          }
+
+          const order = await response.json();
+          await get().deleteCart();
+          return order;
+        } catch (error) {
+          console.error("Order creation error:", error);
+          throw error;
+        }
+      },
+
+      clearCart: () => {
+        set({ cart: null });
+        localStorage.removeItem("cart_id");
+      },
+
     }),
     {
       name: "cart-storage",
-      partialize: (state) => ({ cart: state.cart }),
+      partialize: (state) => ({ 
+        cart: state.cart,
+        shippingAddress: state.shippingAddress,
+        selectedDelivery: state.selectedDelivery 
+      }),
     }
   )
 );
 
-// Selectors for computed values
+
 export const useCartItemCount = () =>
   useCartStore(
     (state) =>

@@ -5,16 +5,20 @@ import { useAuthStore } from "@/src/stores/useAuthStore";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const checkAuthState = useAuthStore((state) => state.checkAuthState);
+  const { checkAuthState, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     setMounted(true);
-    checkAuthState();
-  }, [checkAuthState]);
+    
+    if (!isAuthenticated) {
+      checkAuthState();
+    }
+  }, [checkAuthState, isAuthenticated]);
 
   if (!mounted) {
     return <>{children}</>;
   }
 
   return <>{children}</>;
+
 }

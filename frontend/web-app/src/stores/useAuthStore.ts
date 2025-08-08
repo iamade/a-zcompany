@@ -6,11 +6,9 @@ interface AuthState {
   currentUser: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-
-  // Computed
   isAdmin: boolean;
 
-  // Actions
+ 
   login: (email: string, password: string) => Promise<void>;
   register: (userData: {
     firstName: string;
@@ -37,14 +35,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
+    console.log("Auth store: Starting login...");
     set({ loading: true });
     try {
-      const user = await accountApi.login({ email, password });
-      set({ currentUser: user, isAuthenticated: true, loading: false });
+      await accountApi.login({ email, password });
+      console.log("Auth store: Login API successful, now getting user info...");
+
+      const user = await accountApi.getUserInfo();
+      console.log("Auth store: Got user info:", user);
+
+      set({
+        currentUser: user,
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      console.log("Auth store: State updated successfully");
+
+      const newState = get();
+      console.log("Auth store: Current state after login:", {
+        currentUser: newState.currentUser,
+        isAuthenticated: newState.isAuthenticated,
+        loading: newState.loading,
+      });
     } catch (error) {
       console.error("Login error:", error);
       set({ loading: false });
-      throw error;
+
+      if ((error as any).response?.status === 401) {
+        throw new Error("Email address or password incorrect");
+      }
+
+      if ((error as any).response?.status === 400) {
+        throw new Error("Invalid login request");
+      }
+
+      if (!(error as any).response) {
+        throw new Error("Network error. Please check your connection.");
+      }
+
+      
+      throw new Error("Login failed. Please try again.");
     }
   },
 
@@ -103,12 +134,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   checkAuthState: async () => {
+    const state = get();
+
+    if (state.isAuthenticated && state.currentUser) {
+      return;
+    }
+
     try {
-      // Try to get user info directly instead of checking auth state
+    
       await get().getUserInfo();
     } catch (error) {
-      // If getUserInfo fails, user is not authenticated
-      set({ currentUser: null, isAuthenticated: false });
+    
+      if (!state.isAuthenticated) {
+        set({ currentUser: null, isAuthenticated: false });
+      }
     }
   },
 }));

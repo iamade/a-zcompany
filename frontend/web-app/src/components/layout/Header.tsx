@@ -18,7 +18,7 @@ export function Header() {
 
   useEffect(() => {
     setMounted(true);
-    getCart(); // Load cart when component mounts
+    getCart(); 
   }, [getCart]);
 
   const isActive = (path: string) => {
@@ -64,24 +64,7 @@ export function Header() {
           >
             Shop
           </Link>
-          <Link
-            href="/test-error"
-            className={`hover:text-blue-500 transition-colors ${
-              isActive("/test-error") ? "active" : ""
-            }`}
-          >
-            Errors
-          </Link>
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className={`hover:text-blue-500 transition-colors ${
-                isActive("/admin") ? "active" : ""
-              }`}
-            >
-              Admin
-            </Link>
-          )}
+        
         </nav>
 
         <div className="flex gap-3 align-middle">

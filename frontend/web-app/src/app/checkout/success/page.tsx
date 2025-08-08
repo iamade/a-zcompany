@@ -1,78 +1,39 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { CheckCircle } from "lucide-react";
+import Link from 'next/link'
 
 export default function CheckoutSuccessPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
-
-  useEffect(() => {
-    const orderId = searchParams.get("orderId");
-    if (orderId) {
-      setOrderNumber(orderId);
-      // Clear checkout data from localStorage
-      localStorage.removeItem("checkoutAddress");
-      localStorage.removeItem("checkoutDeliveryMethod");
-    } else {
-      // If no order ID, redirect to home
-      router.push("/");
-    }
-  }, [searchParams, router]);
-
-  if (!orderNumber) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 py-16">
-      <div className="text-center">
-        <div className="flex justify-center mb-6">
-          <CheckCircle size={80} className="text-green-500" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+          </svg>
         </div>
-
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Order Confirmed!
+        
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Order Placed Successfully!
         </h1>
-
-        <p className="text-xl text-gray-600 mb-2">
-          Thank you for your purchase
+        
+        <p className="text-gray-600 mb-8">
+          Thank you for your order. You will receive a confirmation email shortly.
         </p>
-
-        <p className="text-lg text-gray-600 mb-8">Order #{orderNumber}</p>
-
-        <div className="bg-gray-50 p-6 rounded-lg max-w-md mx-auto mb-8">
-          <h2 className="text-lg font-semibold mb-4">What's next?</h2>
-          <ul className="text-left space-y-2 text-gray-600">
-            <li>• You'll receive an email confirmation shortly</li>
-            <li>• We'll send you tracking information when your order ships</li>
-            <li>• You can track your order status in your account</li>
-          </ul>
-        </div>
-
-        <div className="space-x-4">
-          <Link
-            href={`/orders/${orderNumber}`}
-            className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors font-medium"
-          >
-            View Order Details
-          </Link>
-
-          <Link
-            href="/shop"
-            className="inline-block border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-3 rounded-lg transition-colors font-medium"
+        
+        <div className="space-y-3">
+          <Link 
+            href="/shop" 
+            className="block w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
           >
             Continue Shopping
+          </Link>
+          <Link 
+            href="/account/orders" 
+            className="block w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+          >
+            View My Orders
           </Link>
         </div>
       </div>
     </div>
-  );
+  )
 }
+
