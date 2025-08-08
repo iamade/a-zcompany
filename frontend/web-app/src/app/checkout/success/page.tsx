@@ -25,12 +25,6 @@ export default function CheckoutSuccessPage() {
           >
             Continue Shopping
           </Link>
-          <Link 
-            href="/account/orders" 
-            className="block w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-          >
-            View My Orders
-          </Link>
         </div>
       </div>
     </div>

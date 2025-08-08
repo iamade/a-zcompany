@@ -35,14 +35,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
-    console.log("Auth store: Starting login...");
     set({ loading: true });
     try {
       await accountApi.login({ email, password });
-      console.log("Auth store: Login API successful, now getting user info...");
 
       const user = await accountApi.getUserInfo();
-      console.log("Auth store: Got user info:", user);
 
       set({
         currentUser: user,
@@ -50,14 +47,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
       });
 
-      console.log("Auth store: State updated successfully");
 
       const newState = get();
-      console.log("Auth store: Current state after login:", {
-        currentUser: newState.currentUser,
-        isAuthenticated: newState.isAuthenticated,
-        loading: newState.loading,
-      });
+      
     } catch (error) {
       console.error("Login error:", error);
       set({ loading: false });

@@ -17,21 +17,17 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    console.log("Checkout: useEffect triggered", { currentUser, authLoading });
 
     
     if (authLoading) {
-      console.log("Checkout: Auth still loading, waiting...");
       return;
     }
 
     if (!currentUser) {
-      console.log("Checkout: No user found, redirecting to login");
       router.push("/account/login?returnUrl=/checkout");
       return;
     }
 
-    console.log("Checkout: User found, loading cart");
     getCart();
   }, [currentUser, authLoading, router, getCart]);
 

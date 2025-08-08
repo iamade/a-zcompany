@@ -39,13 +39,11 @@ export default function LoginPage() {
     
     try {
       await login(data.email, data.password);
-      console.log("Login successful, redirecting to:", returnUrl);
       setTimeout(() => {
         router.push(returnUrl);
       }, 100);
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.");
-      console.log("Login failed:", err);
     } finally {
       setIsLoading(false);
     }
