@@ -18,10 +18,14 @@ Full-stack e-commerce application with .NET Core API backend and Next.js fronten
 - SQL Server
 - REDIS
 
-### Backend Setup
+### Docker Setup
 ```bash
 docker compose build
 docker compose up -d
+```
+
+### Backend Setup
+```bash
 cd API
 dotnet watch or dotnet run
 ```
