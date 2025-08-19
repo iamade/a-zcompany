@@ -46,4 +46,41 @@ public class ProductsControllerTests
     okResult?.Value.Should().NotBeNull();
     
     }
+
+    [Fact]
+    public async Task CreateProduct_ReturnsCreatedResult_WhenSuccessful()
+{
+    // Arrange
+    var product = _fixture.Create<Product>();
+    _mockUnitOfWork.Setup(x => x.Repository<Product>().Add(It.IsAny<Product>()));
+    _mockUnitOfWork.Setup(x => x.Complete()).ReturnsAsync(true);
+
+    // Act
+    var result = await _controller.CreateProduct(product);
+
+    // Assert
+    result.Result.Should().BeOfType<CreatedAtActionResult>();
+    var createdResult = result.Result as CreatedAtActionResult;
+    createdResult?.Value.Should().Be(product);
+}
+
+[Fact]
+public async Task DeleteProduct_CallsRepositoryRemove_WhenProductExists()
+{
+    // Arrange
+    var product = _fixture.Create<Product>();
+    _mockUnitOfWork.Setup(x => x.Repository<Product>().GetByIdAsync(1))
+                  .ReturnsAsync(product);
+    _mockUnitOfWork.Setup(x => x.Complete()).ReturnsAsync(true);
+
+    // Act
+    await _controller.DeleteProduct(1);
+
+    // Assert - Verify interactions
+    _mockUnitOfWork.Verify(x => x.Repository<Product>().Remove(product), Times.Once);
+    _mockUnitOfWork.Verify(x => x.Complete(), Times.Once);
+}
+
+
+
 }
